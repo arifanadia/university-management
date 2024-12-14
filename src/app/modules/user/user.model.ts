@@ -1,4 +1,6 @@
 import { model, Schema } from 'mongoose';
+import bcrypt from 'bcrypt';
+import config from '../../config';
 import { TUser } from './user.interface';
 
 const userSchema = new Schema<TUser>(
@@ -6,6 +8,7 @@ const userSchema = new Schema<TUser>(
     id: {
       type: String,
       required: true,
+      unique: true, // Ensure unique user IDs
     },
     password: {
       type: String,
@@ -22,6 +25,7 @@ const userSchema = new Schema<TUser>(
     status: {
       type: String,
       enum: ['in-progress', 'blocked'],
+      default: 'in-progress',
     },
     isDeleted: {
       type: Boolean,
@@ -32,4 +36,25 @@ const userSchema = new Schema<TUser>(
     timestamps: true,
   },
 );
+
+// Pre-save middleware for hashing the password
+userSchema.pre('save', async function (next) {
+  const user = this;
+
+
+    // Hash the password
+    user.password = await bcrypt.hash(
+      user.password,
+      Number(config.bcrypt_salt_rounds)
+    );
+    next();
+  } 
+);
+
+// set " " after saving password
+userSchema.post('save', function (doc, next) {
+  doc.password = ' ';
+  next();
+});
+
 export const User = model<TUser>('User', userSchema);
