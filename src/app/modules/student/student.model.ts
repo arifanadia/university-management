@@ -13,20 +13,14 @@ const userNameSchema = new Schema<TUserName>({
     trim: true,
     validate: {
       validator: function (value: string) {
-        // Ensure the value starts with uppercase and the rest is unchanged
         const firstNameStr = value.charAt(0).toUpperCase() + value.slice(1);
-        return firstNameStr === value; // Return true if the value is valid
+        return firstNameStr === value;
       },
-      message: '{VALUE} is not capital format',
+      message: '{VALUE} is not in capital format',
     },
   },
-  middleName: {
-    type: String,
-  },
-  lastName: {
-    type: String,
-    required: true,
-  },
+  middleName: String,
+  lastName: { type: String, required: true },
 });
 
 const guardianSchema = new Schema<TGuardian>({
@@ -45,49 +39,51 @@ const localGuardianSchema = new Schema<TLocalGuardian>({
   address: { type: String, required: true },
 });
 
-const studentSchema = new Schema<TStudent>({
-  id: { type: String, required: true, unique: true },
-  user: {
-    type: Schema.Types.ObjectId,
-    required: [true, 'User id is required'],
-    unique: true,
-    ref: 'User',
-  },
-  name: {
-    type: userNameSchema,
-    required: true,
-  },
-  gender: {
-    type: String,
-    enum: {
-      values: ['male', 'female', 'other'],
-      message: '{VALUE} is not valid',
+const studentSchema = new Schema<TStudent>(
+  {
+    id: { type: String, required: true, unique: true },
+    user: {
+      type: Schema.Types.ObjectId,
+      required: [true, 'User id is required'],
+      unique: true,
+      ref: 'User',
     },
-    required: true,
+    name: { type: userNameSchema, required: true },
+    gender: {
+      type: String,
+      enum: ['male', 'female', 'other'],
+      required: true,
+    },
+    dateOfBirth: Date,
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      validate: {
+        validator: function (value: string) {
+          return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+        },
+        message: '{VALUE} is not a valid email format',
+      },
+    },
+    contactNo: { type: String, required: true },
+    emergencyContactNo: { type: String, required: true },
+    bloodGroup: {
+      type: String,
+      enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
+    },
+    presentAddress: { type: String, required: true },
+    permanentAddress: { type: String, required: true },
+    guardian: { type: guardianSchema, required: true },
+    localGuardian: { type: localGuardianSchema, required: true },
+    profileImg: {
+      type: String,
+      default: 'https://example.com/default-profile.png',
+    },
   },
-  dateOfBirth: { type: String },
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-  },
-  contactNo: { type: String, required: true },
-  emergencyContactNo: { type: String, required: true },
-  bloodGroup: {
-    type: String,
-    enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
-  },
-  presentAddress: { type: String, required: true },
-  permanentAddress: { type: String, required: true },
-  guardian: {
-    type: guardianSchema,
-    required: true,
-  },
-  localGuardian: {
-    type: localGuardianSchema,
-    required: true,
-  },
-  profileImg: { type: String },
-});
+  { timestamps: true }
+);
+
+studentSchema.index({ email: 1, contactNo: 1 });
 
 export const Student = model<TStudent>('Student', studentSchema);

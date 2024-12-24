@@ -1,33 +1,28 @@
-import { Request, Response } from 'express';
 import { StudentServices } from './student.service';
+import sendResponse from '../../utils/sendResponse';
+import { StatusCodes } from 'http-status-codes';
+import catchAsync from '../../utils/catchAsync';
 
+const getAllStudents = catchAsync(async (req, res) => {
+  const result = await StudentServices.getAllStudentsFromDB();
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: 'Students are retrieved Successfully',
+    data: result,
+  });
+});
 
-const getAllStudents = async (req: Request, res: Response) => {
-  try {
-    const result = await StudentServices.getAllStudentsFromDB();
-    res.status(200).json({
-      success: true,
-      message: 'Students are retrieved Successfully',
-      data: result,
-    });
-  } catch (error) {
-    console.log(error);
-  }
-};
-
-const getSingleStudent = async (req: Request, res: Response) => {
-  try {
-    const { studentId } = req.params;
-    const result = await StudentServices.getSingleStudentFromDB(studentId);
-    res.status(200).json({
-      success: true,
-      message: 'Student are retrieved Successfully',
-      data: result,
-    });
-  } catch (error) {
-    console.log(error);
-  }
-};
+const getSingleStudent = catchAsync(async (req, res) => {
+  const { studentId } = req.params;
+  const result = await StudentServices.getSingleStudentFromDB(studentId);
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: 'Student are retrieved Successfully',
+    data: result,
+  });
+});
 
 export const StudentControllers = {
   getAllStudents,
