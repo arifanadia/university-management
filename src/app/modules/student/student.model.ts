@@ -5,6 +5,7 @@ import {
   TStudent,
   TUserName,
 } from './student.interface';
+import { boolean } from 'zod';
 
 const userNameSchema = new Schema<TUserName>({
   firstName: {
@@ -80,8 +81,16 @@ const studentSchema = new Schema<TStudent>(
       type: String,
       default: 'https://example.com/default-profile.png',
     },
+    admissionSemester: {
+      type: Schema.Types.ObjectId,
+      ref: 'AcademicSemester',
+    },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 studentSchema.index({ email: 1, contactNo: 1 });
